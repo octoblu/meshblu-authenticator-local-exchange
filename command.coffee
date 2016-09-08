@@ -7,6 +7,7 @@ class Command
     @serverOptions = {
       meshbluConfig:  new MeshbluConfig().toJSON()
       port:           process.env.PORT || 80
+      afterAuthRedirectUrl: process.env.AFTER_AUTH_REDIRECT_URL
       exchangeDomainUrl: process.env.EXCHANGE_DOMAIN_URL
       formServiceUrl: process.env.FORM_SERVICE_URL
       formSchemaUrl: process.env.FORM_SCHEMA_URL
@@ -22,6 +23,7 @@ class Command
   run: =>
     # Use this to require env
     @panic new Error('Missing required environment variable: AUTH_RESPONSE_URL') if _.isEmpty @serverOptions.authResponseUrl
+    @panic new Error('Missing required environment variable: AFTER_AUTH_REDIRECT_URL') if _.isEmpty @serverOptions.afterAuthRedirectUrl
     @panic new Error('Missing required environment variable: EXCHANGE_DOMAIN_URL') if _.isEmpty @serverOptions.exchangeDomainUrl
     @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formServiceUrl
     @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formSchemaUrl

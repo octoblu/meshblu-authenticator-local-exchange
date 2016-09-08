@@ -34,17 +34,20 @@ class AuthService
     bourse = new Bourse {protocol, hostname, port, password, username: email}
     bourse.whoami (error, user) =>
       return callback error if error?
-      query = @_getQuery { id: user.id }
 
+      query = @_getQuery { id: user.id }
       @deviceModel.findVerified {query, password: FAKE_SECRET}, (error, device) =>
         return callback error if error?
-        return @_create {user, query}, callback unless device?
+        return @_create {user, email, query}, callback unless device?
         return @_generateToken {user, query, device}, callback
 
-  _create: ({user, query}, callback) =>
+  _create: ({user, email, query}, callback) =>
     @deviceModel.create {
       query: query,
-      data: {}
+      data: {
+        name: user.name
+        email: email
+      }
       user_id: user.id
       secret: FAKE_SECRET
     }, (error, device) =>

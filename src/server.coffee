@@ -1,10 +1,11 @@
+cors           = require 'cors'
 enableDestroy  = require 'server-destroy'
 octobluExpress = require 'express-octoblu'
 MeshbluAuth    = require 'express-meshblu-auth'
 MeshbluHttp    = require 'meshblu-http'
 Router         = require './router'
 AuthService    = require './services/auth-service'
-debug              = require('debug')('meshblu-authenticator-local-exchange:server')
+debug          = require('debug')('meshblu-authenticator-local-exchange:server')
 serveStatic = require 'serve-static'
 
 class Server
@@ -40,7 +41,8 @@ class Server
     @server.address()
 
   run: (callback) =>
-    app = octobluExpress({ @logFn, @disableLogging })
+    app = octobluExpress({ @logFn, @disableLogging, disableCors: true })
+    app.use cors(exposedHeaders: ['Location', 'location'])
 
     router = new Router {@meshbluConfig, @afterAuthRedirectUrl, @authService}
     router.route app

@@ -1,7 +1,6 @@
 [
   {
     key: "email"
-    type: "email"
   }
   {
     key: "password"

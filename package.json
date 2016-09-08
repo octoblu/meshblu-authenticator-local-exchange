@@ -33,6 +33,7 @@
     "@octoblu/peter-party-planner": "^2.1.1",
     "bourse": "^1.0.2",
     "coffee-script": "^1.10.0",
+    "cors": "^2.8.1",
     "cson": "^3.0.2",
     "debug": "^2.2.0",
     "express-meshblu-auth": "^7.0.0",
