@@ -7,6 +7,11 @@ class Command
     @serverOptions = {
       meshbluConfig:  new MeshbluConfig().toJSON()
       port:           process.env.PORT || 80
+      exchangeDomainUrl: process.env.EXCHANGE_DOMAIN_URL
+      formServiceUrl: process.env.FORM_SERVICE_URL
+      formSchemaUrl: process.env.FORM_SCHEMA_URL
+      schemaUrl: process.env.MESSAGE_SCHEMA_URL
+      authResponseUrl: process.env.AUTH_RESPONSE_URL
       disableLogging: process.env.DISABLE_LOGGING == "true"
     }
 
@@ -16,7 +21,11 @@ class Command
 
   run: =>
     # Use this to require env
-    # @panic new Error('Missing required environment variable: ENV_NAME') if _.isEmpty @serverOptions.envName
+    @panic new Error('Missing required environment variable: AUTH_RESPONSE_URL') if _.isEmpty @serverOptions.authResponseUrl
+    @panic new Error('Missing required environment variable: EXCHANGE_DOMAIN_URL') if _.isEmpty @serverOptions.exchangeDomainUrl
+    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formServiceUrl
+    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formSchemaUrl
+    @panic new Error('Missing required environment variable: MESSAGE_SCHEMA_URL') if _.isEmpty @serverOptions.schemaUrl
     @panic new Error('Missing meshbluConfig') if _.isEmpty @serverOptions.meshbluConfig
 
     server = new Server @serverOptions

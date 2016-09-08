@@ -4,9 +4,20 @@ MeshbluAuth        = require 'express-meshblu-auth'
 Router             = require './router'
 MeshbluAuthenticatorLocalExchangeService = require './services/meshblu-authenticator-local-exchange-service'
 debug              = require('debug')('meshblu-authenticator-local-exchange:server')
+serveStatic = require 'serve-static'
 
 class Server
-  constructor: ({@logFn, @disableLogging, @port, @meshbluConfig})->
+  constructor: ({
+    @logFn,
+    @disableLogging,
+    @port,
+    @exchangeDomainUrl,
+    @formServiceUrl,
+    @formSchemaUrl,
+    @schemaUrl,
+    @authResponseUrl,
+    @meshbluConfig
+  })->
     throw new Error 'Missing meshbluConfig' unless @meshbluConfig?
 
   address: =>
@@ -14,12 +25,16 @@ class Server
 
   run: (callback) =>
     app = octobluExpress({ @logFn, @disableLogging })
+    app.use(serveStatic(__dirname + '/public', {}))
 
-    meshbluAuth = new MeshbluAuth @meshbluConfig
-    app.use meshbluAuth.auth()
-    app.use meshbluAuth.gateway()
-
-    meshbluAuthenticatorLocalExchangeService = new MeshbluAuthenticatorLocalExchangeService
+    meshbluAuthenticatorLocalExchangeService =
+      new MeshbluAuthenticatorLocalExchangeService({
+        @exchangeDomainUrl,
+        @formServiceUrl,
+        @formSchemaUrl,
+        @authResponseUrl,
+        @schemaUrl
+      })
     router = new Router {@meshbluConfig, meshbluAuthenticatorLocalExchangeService}
 
     router.route app

@@ -27,5 +27,6 @@ build/Release
 node_modules
 
 meshblu.json
+environment.cson
 
 dpl_*
