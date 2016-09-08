@@ -7,6 +7,9 @@ class MeshbluAuthenticatorLocalExchangeController
 
 
   authenticate: (request, response) =>
-    return response.send(200, 'Ok')
+    {username, password } = request.body
+    response.send({'login': 'success'}).status(201)
+
+
 
 module.exports = MeshbluAuthenticatorLocalExchangeController
