@@ -13,7 +13,6 @@ class StaticSchemasController
     {name} = request.params
 
     filePath = path.resolve(path.join(@staticSchemasPath, "#{name}.cson"))
-    console.log 'Filepath is ', filePath
     return response.status(400).send error: 'Invalid file path' unless @_validateFilePath filePath
 
     fs.readFile filePath, (error, csonData) =>
