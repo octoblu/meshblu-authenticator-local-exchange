@@ -25,7 +25,6 @@ class Server
 
   run: (callback) =>
     app = octobluExpress({ @logFn, @disableLogging })
-    app.use(serveStatic(__dirname + '/public', {}))
 
     meshbluAuthenticatorLocalExchangeService =
       new MeshbluAuthenticatorLocalExchangeService({
@@ -45,7 +44,7 @@ class Server
   stop: (callback) =>
     @server.close callback
 
-  destroy: =>
-    @server.destroy()
+  destroy: (callback) =>
+    @server.destroy(callback) 
 
 module.exports = Server

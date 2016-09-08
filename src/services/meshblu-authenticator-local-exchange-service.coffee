@@ -1,6 +1,9 @@
 url = require 'url'
+Bourse = require 'bourse'
+
 class MeshbluAuthenticatorLocalExchangeService
-  constructor:({@formServiceUrl, @authResponseUrl, @formSchemaUrl, @schemaUrl}) ->
+  constructor:({@formServiceUrl, @authResponseUrl, @exchangeDomainUrl,  @formSchemaUrl, @schemaUrl}) ->
+    throw new Error 'Missing required parameter: exchangeDomainUrl' unless @exchangeDomainUrl?
 
   getAuthorizationUrl: () =>
     {protocol, hostname, port, pathname} = url.parse @formServiceUrl
@@ -11,9 +14,10 @@ class MeshbluAuthenticatorLocalExchangeService
     }
     return url.format {protocol, hostname, port, pathname, query}
 
-  # doHello: ({hasError}, callback) =>
-  #   return callback @_createError(500, 'Not enough dancing!') if hasError?
-  #   callback()
+  authenticate: ({email, password}, callback) =>
+    {protocol, hostname, port}  = url.parse @exchangeDomainUrl
+    bourse = new Bourse {protocol, hostname, port, password, username: email}
+    bourse.whoami callback
 
   _createError: (code, message) =>
     error = new Error message

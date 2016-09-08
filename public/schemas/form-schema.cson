@@ -1,6 +1,7 @@
 [
   {
-    key: "username"
+    key: "email"
+    type: "email"
   }
   {
     key: "password"
