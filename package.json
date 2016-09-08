@@ -40,6 +40,7 @@
     "lodash": "^4.15.0",
     "meshblu-authenticator-core": "^3.3.0",
     "meshblu-config": "^6.0.0",
+    "meshblu-http": "^7.2.0",
     "ntlm": "^0.1.1",
     "serve-static": "^1.11.1",
     "server-destroy": "^1.0.1",

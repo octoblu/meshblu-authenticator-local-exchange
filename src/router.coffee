@@ -1,15 +1,17 @@
-MeshbluAuthenticatorLocalExchangeController = require './controllers/meshblu-authenticator-local-exchange-controller'
+AuthController = require './controllers/auth-controller'
 StaticSchemasController = require './controllers/static-schemas-controller'
 class Router
-  constructor: ({@meshbluAuthenticatorLocalExchangeService}) ->
-    throw new Error 'Missing meshbluAuthenticatorLocalExchangeService' unless @meshbluAuthenticatorLocalExchangeService?
+  constructor: ({authService, afterAuthRedirectUrl}) ->
+    throw new Error 'Missing authService' unless authService?
+    throw new Error 'Missing afterAuthRedirectUrl' unless afterAuthRedirectUrl?
+
+    @authController = new AuthController {authService, afterAuthRedirectUrl}
+    @staticSchemasController = new StaticSchemasController
 
   route: (app) =>
-    meshbluAuthenticatorLocalExchangeController = new MeshbluAuthenticatorLocalExchangeController {@meshbluAuthenticatorLocalExchangeService}
-    staticSchemasController = new StaticSchemasController
-    app.get '/authenticate', meshbluAuthenticatorLocalExchangeController.signin
-    app.post '/authenticate', meshbluAuthenticatorLocalExchangeController.authenticate
-    app.get '/public/schemas/:name', staticSchemasController.get
+    app.get '/authenticate',  @authController.signin
+    app.post '/authenticate', @authController.authenticate
+    app.get '/public/schemas/:name', @staticSchemasController.get
     # e.g. app.put '/resource/:id', someController.update
 
 module.exports = Router

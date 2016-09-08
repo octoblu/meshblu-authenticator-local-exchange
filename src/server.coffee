@@ -1,8 +1,9 @@
-enableDestroy      = require 'server-destroy'
-octobluExpress     = require 'express-octoblu'
-MeshbluAuth        = require 'express-meshblu-auth'
-Router             = require './router'
-MeshbluAuthenticatorLocalExchangeService = require './services/meshblu-authenticator-local-exchange-service'
+enableDestroy  = require 'server-destroy'
+octobluExpress = require 'express-octoblu'
+MeshbluAuth    = require 'express-meshblu-auth'
+MeshbluHttp    = require 'meshblu-http'
+Router         = require './router'
+AuthService    = require './services/auth-service'
 debug              = require('debug')('meshblu-authenticator-local-exchange:server')
 serveStatic = require 'serve-static'
 
@@ -15,10 +16,25 @@ class Server
     @formServiceUrl,
     @formSchemaUrl,
     @schemaUrl,
+    @afterAuthRedirectUrl,
     @authResponseUrl,
     @meshbluConfig
-  })->
+  }) ->
     throw new Error 'Missing meshbluConfig' unless @meshbluConfig?
+    throw new Error 'Missing afterAuthRedirectUrl' unless @afterAuthRedirectUrl?
+
+    @meshbluHttp = new MeshbluHttp @meshbluConfig
+    @meshbluHttp.setPrivateKey @meshbluConfig.privateKey
+
+    @authService = new AuthService({
+      @meshbluHttp,
+      @meshbluConfig,
+      @exchangeDomainUrl,
+      @formServiceUrl,
+      @formSchemaUrl,
+      @authResponseUrl,
+      @schemaUrl
+    })
 
   address: =>
     @server.address()
@@ -26,16 +42,7 @@ class Server
   run: (callback) =>
     app = octobluExpress({ @logFn, @disableLogging })
 
-    meshbluAuthenticatorLocalExchangeService =
-      new MeshbluAuthenticatorLocalExchangeService({
-        @exchangeDomainUrl,
-        @formServiceUrl,
-        @formSchemaUrl,
-        @authResponseUrl,
-        @schemaUrl
-      })
-    router = new Router {@meshbluConfig, meshbluAuthenticatorLocalExchangeService}
-
+    router = new Router {@meshbluConfig, @afterAuthRedirectUrl, @authService}
     router.route app
 
     @server = app.listen @port, callback
@@ -45,6 +52,6 @@ class Server
     @server.close callback
 
   destroy: (callback) =>
-    @server.destroy(callback) 
+    @server.destroy(callback)
 
 module.exports = Server
