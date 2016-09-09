@@ -9,13 +9,13 @@ class AuthController
     return response.redirect(301, @authService.getAuthorizationUrl())
 
   authenticate: (request, response) =>
-    { email, password } = request.body
-    @authService.authenticate {email, password}, (error, user) =>
+    { username, password } = request.body
+    @authService.authenticate {username, password}, (error, user) =>
       return response.sendError error if error?
       return response.sendStatus 401 unless user?
-      return response.redirect(201, @_buildRedirectUrl({email, user}))
+      return response.redirect(201, @_buildRedirectUrl({user}))
 
-  _buildRedirectUrl: ({email, user}) =>
+  _buildRedirectUrl: ({user}) =>
     bearerToken = new Buffer("#{user.uuid}:#{user.token}").toString 'base64'
 
     {protocol, hostname, port, path} = url.parse @afterAuthRedirectUrl

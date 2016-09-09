@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@octoblu/peter-party-planner": "^2.1.1",
-    "bourse": "^1.0.2",
+    "bourse": "^1.2.0",
     "coffee-script": "^1.10.0",
     "cors": "^2.8.1",
     "cson": "^3.0.2",
@@ -39,7 +39,7 @@
     "express-meshblu-auth": "^7.0.0",
     "express-octoblu": "^1.1.1",
     "lodash": "^4.15.0",
-    "meshblu-authenticator-core": "^3.3.0",
+    "meshblu-authenticator-core": "^4.0.1",
     "meshblu-config": "^6.0.0",
     "meshblu-http": "^7.2.0",
     "ntlm": "^0.1.1",

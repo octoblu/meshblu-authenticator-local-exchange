@@ -14,6 +14,7 @@ class Command
       schemaUrl: process.env.MESSAGE_SCHEMA_URL
       authResponseUrl: process.env.AUTH_RESPONSE_URL
       disableLogging: process.env.DISABLE_LOGGING == "true"
+      authHostname: process.env.AUTH_HOSTNAME
     }
 
   panic: (error) =>
@@ -28,6 +29,7 @@ class Command
     @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formServiceUrl
     @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formSchemaUrl
     @panic new Error('Missing required environment variable: MESSAGE_SCHEMA_URL') if _.isEmpty @serverOptions.schemaUrl
+    @panic new Error('Missing required environment variable: AUTH_HOSTNAME') if _.isEmpty @serverOptions.authHostname
     @panic new Error('Missing meshbluConfig') if _.isEmpty @serverOptions.meshbluConfig
 
     server = new Server @serverOptions

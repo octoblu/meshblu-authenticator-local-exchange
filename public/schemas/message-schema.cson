@@ -1,7 +1,7 @@
 type: "object"
 properties:
-  email:
-    title: "Email"
+  username:
+    title: "Username"
     type: "string"
     minLength: 1
   password:

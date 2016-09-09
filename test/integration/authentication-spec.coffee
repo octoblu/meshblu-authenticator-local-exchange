@@ -8,7 +8,6 @@ path          = require 'path'
 
 CHALLENGE = _.trim fs.readFileSync path.join(__dirname, '../fixtures/challenge.b64'), encoding: 'utf8'
 NEGOTIATE = _.trim fs.readFileSync path.join(__dirname, '../fixtures/negotiate.b64'), encoding: 'utf8'
-USER_SETTINGS_RESPONSE = fs.readFileSync path.join(__dirname, '../fixtures/userSettingsResponse.xml'), encoding: 'utf8'
 MESHBLU_PRIVATE_KEY = fs.readFileSync path.join(__dirname, '../fixtures/meshblu-private-key.b64'), encoding: 'utf8'
 
 describe 'Local Exchange Authenticator', ->
@@ -28,6 +27,7 @@ describe 'Local Exchange Authenticator', ->
       formSchemaUrl: 'https://meshblulocalexchange.localtunnel.me/public/schemas/api-authentication-form.cson'
       schemaUrl: 'https://meshblulocalexchange.localtunnel.me/public/schemas/api-authentication-form.cson'
       afterAuthRedirectUrl: 'http://zombo.com'
+      authHostname: 'citrino.biz'
       logFn: @logFn
       meshbluConfig:
         hostname: 'localhost'
@@ -60,17 +60,17 @@ describe 'Local Exchange Authenticator', ->
           uri: '/authenticate'
           baseUrl: "http://localhost:#{@serverPort}"
           json: {
-            email: 'foo@biz.biz',
+            username: 'foo',
             password: 'bar'
           }
 
         @negotiate = @exchangeServerMock
-          .post '/autodiscover/autodiscover.svc'
+          .post '/EWS/Exchange.asmx'
           .set 'Authorization', NEGOTIATE
           .reply 401, '', {'WWW-Authenticate': CHALLENGE}
 
         @getUser = @exchangeServerMock
-          .post '/autodiscover/autodiscover.svc'
+          .post '/EWS/Exchange.asmx'
           .reply 401
 
         request.post options, (error, @response, @body) =>
@@ -86,27 +86,27 @@ describe 'Local Exchange Authenticator', ->
             uri: '/authenticate'
             baseUrl: "http://localhost:#{@serverPort}"
             json: {
-              email: 'foo@biz.biz',
+              username: 'foo',
               password: 'bar'
             }
 
           @negotiate = @exchangeServerMock
-            .post '/autodiscover/autodiscover.svc'
+            .post '/EWS/Exchange.asmx'
             .set 'Authorization', NEGOTIATE
             .reply 401, '', {'WWW-Authenticate': CHALLENGE}
 
           @getUser = @exchangeServerMock
-            .post '/autodiscover/autodiscover.svc'
-            .reply 200, USER_SETTINGS_RESPONSE
+            .post '/EWS/Exchange.asmx'
+            .reply 200
 
           @meshblu
             .post '/search/devices'
-            .send 'authenticator-uuid.id': 'ada48c41-66c9-407b-bf2a-a7880e611435'
+            .send 'authenticator-uuid.id': 'foo'
             .reply 200, []
 
           @meshblu
             .get '/v2/devices'
-            .query 'authenticator-uuid.id': 'ada48c41-66c9-407b-bf2a-a7880e611435'
+            .query 'authenticator-uuid.id': 'foo'
             .reply 200, []
 
           @meshblu
@@ -125,4 +125,58 @@ describe 'Local Exchange Authenticator', ->
 
         it 'Should return a location header with a meshblu bearer token', ->
           bearerToken = encodeURIComponent new Buffer('user-uuid:user-token').toString('base64')
+          expect(@response.headers.location).to.deep.equal "http://zombo.com?bearerToken=#{bearerToken}"
+
+      describe 'when the meshblu device already exists', ->
+        beforeEach 'request.post', (done) ->
+          options =
+            uri: '/authenticate'
+            baseUrl: "http://localhost:#{@serverPort}"
+            json: {
+              username: 'foo',
+              password: 'bar'
+            }
+
+          @negotiate = @exchangeServerMock
+            .post '/EWS/Exchange.asmx'
+            .set 'Authorization', NEGOTIATE
+            .reply 401, '', {'WWW-Authenticate': CHALLENGE}
+
+          @getUser = @exchangeServerMock
+            .post '/EWS/Exchange.asmx'
+            .reply 200
+
+          @meshblu
+            .post '/search/devices'
+            .send 'authenticator-uuid.id': 'foo'
+            .reply 200, [{
+                uuid: 'user-uuid'
+                token: 'hashed-user-token'
+                owner: "user-uuid"
+                'authenticator-uuid': {
+                  signature: "DjKlbv3xa1ZFmedeO6eArqY1DMyZKfi5u9fMfVQdr7v/WZUNhiNziSRxQiBnpD2vTkGcpFivGiYF/IqtSNSvXoc4zlcU4IW1Gca6UfVTLM28j4Vpc7i1xDSERJbxzxrL4Wxrbexx/lgNOnpNyJ7Lpohzyxc67ZsfanhYqtDDbe48RolpWzi6MLtaedrYo2HsmJ9V5RWhB0XJdet8PxrXMxB0sC0gQh+jVmY/q1Ax2egzt5n/2d0DJ+Gsb87YhkDAEOta28GH+HZD4X3Vhr8josjg68SARv7f+O5UQICX94ZPt/BcFeoue1zf/s28KG660M/1aKm1PUg47uGUI+DS2g=="
+                  id: "foo"
+                  secret: "$2a$08$dPm67omlqnUaklw/qbYUUOE82lUTfNjToU4EGJf.h6VLTb9TcsM9W"
+                }
+              }]
+
+          @register = @meshblu
+            .post '/devices'
+            .reply 501
+
+          @meshblu
+            .post '/devices/user-uuid/tokens'
+            .reply 201, {uuid: 'user-uuid', token: 'user-token-2'}
+
+          request.post options, (error, @response, @body) =>
+            done error
+
+        it 'Should return a 201', ->
+          expect(@response.statusCode).to.equal 201
+
+        it 'Should not register a new device', ->
+          expect(@register.isDone).to.be.false
+
+        it 'Should return a location header with a meshblu bearer token', ->
+          bearerToken = encodeURIComponent new Buffer('user-uuid:user-token-2').toString('base64')
           expect(@response.headers.location).to.deep.equal "http://zombo.com?bearerToken=#{bearerToken}"

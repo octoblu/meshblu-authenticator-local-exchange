@@ -29,32 +29,29 @@ class AuthService
     }
     return url.format {protocol, hostname, port, pathname, query}
 
-  authenticate: ({email, password}, callback) =>
+  authenticate: ({username, password}, callback) =>
     {protocol, hostname, port}  = url.parse @exchangeDomainUrl
-    bourse = new Bourse {protocol, hostname, port, password, username: email}
-    bourse.whoami (error, user) =>
+    bourse = new Bourse {protocol, hostname, port, password, username: username}
+    bourse.authenticate (error, authenticated) =>
       return callback error if error?
+      return callback @_createError 401, 'Unauthorized' unless authenticated
 
-      query = @_getQuery { id: user.id }
+      query = @_getQuery { id: username }
       @deviceModel.findVerified {query, password: FAKE_SECRET}, (error, device) =>
         return callback error if error?
-        return @_create {user, email, query}, callback unless device?
-        return @_generateToken {user, query, device}, callback
+        return @_create {username, query}, callback unless device?
+        return @_generateToken {query, device}, callback
 
-  _create: ({user, email, query}, callback) =>
+  _create: ({username, query}, callback) =>
     @deviceModel.create {
       query: query,
-      data: {
-        name: user.name
-        email: email
-      }
-      user_id: user.id
+      user_id: username
       secret: FAKE_SECRET
     }, (error, device) =>
       return callback error if error?
       return callback null, device
 
-  _generateToken: ({user, query, device}, callback) =>
+  _generateToken: ({query, device}, callback) =>
     @meshbluHttp.generateAndStoreToken device.uuid, (error, credentials) =>
       return callback error if error?
       callback null, credentials
