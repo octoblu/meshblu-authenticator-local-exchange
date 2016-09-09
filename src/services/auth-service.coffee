@@ -45,6 +45,9 @@ class AuthService
   _create: ({username, query}, callback) =>
     @deviceModel.create {
       query: query,
+      data: {
+        name: username
+      }
       user_id: username
       secret: FAKE_SECRET
     }, (error, device) =>
