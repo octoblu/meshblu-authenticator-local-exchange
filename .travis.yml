@@ -7,6 +7,13 @@ branches:
 addons:
   code_climate:
     repo_token: 9a2acebdb7a1b4bfb464966f2d259d0d0947d65cd54366f37e2b3ba786810399
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+env:
+  - CXX=g++-4.8
 before_script:
 - npm install -g codeclimate-test-reporter
 after_script:

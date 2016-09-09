@@ -11,7 +11,7 @@ class Router
   route: (app) =>
     app.get '/authenticate',  @authController.signin
     app.post '/authenticate', @authController.authenticate
-    app.get '/public/schemas/:name', @staticSchemasController.get
+    app.get '/schemas/:name', @staticSchemasController.get
     # e.g. app.put '/resource/:id', someController.update
 
 module.exports = Router
