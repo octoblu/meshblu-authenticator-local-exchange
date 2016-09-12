@@ -18,9 +18,9 @@ class AuthController
   _buildRedirectUrl: ({user}) =>
     bearerToken = new Buffer("#{user.uuid}:#{user.token}").toString 'base64'
 
-    {protocol, hostname, port, path} = url.parse @afterAuthRedirectUrl
+    {protocol, hostname, port, pathname} = url.parse @afterAuthRedirectUrl
 
-    return url.format {protocol, hostname, port, path, query: {bearerToken}}
+    return url.format {protocol, hostname, port, pathname, query: {bearerToken}}
 
 
 module.exports = AuthController
