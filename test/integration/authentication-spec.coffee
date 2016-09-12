@@ -1,3 +1,5 @@
+{beforeEach, describe, it} = global
+{expect} = require 'chai'
 shmock        = require 'shmock'
 request       = require 'request'
 enableDestroy = require 'server-destroy'
@@ -125,7 +127,7 @@ describe 'Local Exchange Authenticator', ->
 
         it 'Should return a location header with a meshblu bearer token', ->
           bearerToken = encodeURIComponent new Buffer('user-uuid:user-token').toString('base64')
-          expect(@response.headers.location).to.deep.equal "http://zombo.com?bearerToken=#{bearerToken}"
+          expect(@response.headers.location).to.deep.equal "http://zombo.com/?bearerToken=#{bearerToken}"
 
       describe 'when the meshblu device already exists', ->
         beforeEach 'request.post', (done) ->
@@ -179,4 +181,4 @@ describe 'Local Exchange Authenticator', ->
 
         it 'Should return a location header with a meshblu bearer token', ->
           bearerToken = encodeURIComponent new Buffer('user-uuid:user-token-2').toString('base64')
-          expect(@response.headers.location).to.deep.equal "http://zombo.com?bearerToken=#{bearerToken}"
+          expect(@response.headers.location).to.deep.equal "http://zombo.com/?bearerToken=#{bearerToken}"
