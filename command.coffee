@@ -1,10 +1,10 @@
 _             = require 'lodash'
 MeshbluConfig = require 'meshblu-config'
 Server        = require './src/server'
+redis         = require 'ioredis'
+RedisNS       = require 'redis-ns'
 
 class Command
-  constructor: ->
-
   getOptions: =>
     @panic new Error('Missing required environment variable: AUTH_RESPONSE_URL') if _.isEmpty process.env.AUTH_RESPONSE_URL
     @panic new Error('Missing required environment variable: AFTER_AUTH_REDIRECT_URL') if _.isEmpty process.env.AFTER_AUTH_REDIRECT_URL
@@ -14,7 +14,7 @@ class Command
     @panic new Error('Missing required environment variable: MESSAGE_SCHEMA_URL') if _.isEmpty process.env.MESSAGE_SCHEMA_URL
     @panic new Error('Missing required environment variable: AUTH_HOSTNAME') if _.isEmpty process.env.AUTH_HOSTNAME
     @panic new Error('Missing required environment variable: ACTIVE_DIRECTORY_CONNECTOR_UUID') if _.isEmpty process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
-    @panic new Error('Missing meshbluConfig') if _.isEmpty @serverOptions.meshbluConfig
+    @panic new Error('Missing required environment variable: REDIS_URI') if _.isEmpty process.env.REDIS_URI
 
     return {
       meshbluConfig:                new MeshbluConfig().toJSON()
@@ -28,6 +28,7 @@ class Command
       disableLogging:               process.env.DISABLE_LOGGING == "true"
       authHostname:                 process.env.AUTH_HOSTNAME
       activeDirectoryConnectorUuid: process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
+      redisClient:                  new RedisNS 'meshblu-authenticator-local-exchange', new redis process.env.REDIS_URI
     }
 
   panic: (error) =>

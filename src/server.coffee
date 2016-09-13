@@ -25,6 +25,7 @@ class Server
   }) ->
     throw new Error 'Missing meshbluConfig' unless @meshbluConfig?
     throw new Error 'Missing afterAuthRedirectUrl' unless @afterAuthRedirectUrl?
+    throw new Error 'Missing redisClient' unless redisClient?
 
     @meshbluHttp = new MeshbluHttp @meshbluConfig
     @meshbluHttp.setPrivateKey @meshbluConfig.privateKey

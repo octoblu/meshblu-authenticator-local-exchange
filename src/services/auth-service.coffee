@@ -46,6 +46,12 @@ class AuthService
         return @_create {username, query}, callback unless device?
         return @_generateToken {query, device}, callback
 
+
+  storeResponse: (response, callback) =>
+    responseId = _.get response, 'metadata.respond.to'
+    return callback @_createError 422, 'metadata.respond.to was not defined' unless responseId?
+    @redisClient.lpush response.metadata.respond.to, JSON.stringify(response), callback
+
   _create: ({username, query}, callback) =>
     @_getUserInfo username, (error, userInfo) =>
       return callback error if error?

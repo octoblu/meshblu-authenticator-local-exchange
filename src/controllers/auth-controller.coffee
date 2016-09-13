@@ -15,6 +15,12 @@ class AuthController
       return response.sendStatus 401 unless user?
       return response.redirect(201, @_buildRedirectUrl({user}))
 
+
+  message: (request, response) =>
+    @authService.storeResponse request.body, (error) =>
+      return response.sendError error if error?
+      return response.sendStatus 204
+
   _buildRedirectUrl: ({user}) =>
     bearerToken = new Buffer("#{user.uuid}:#{user.token}").toString 'base64'
 
