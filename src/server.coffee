@@ -10,16 +10,18 @@ serveStatic = require 'serve-static'
 
 class Server
   constructor: ({
-    @logFn,
-    @disableLogging,
-    @port,
-    @exchangeDomainUrl,
-    @formServiceUrl,
-    @formSchemaUrl,
-    @schemaUrl,
-    @afterAuthRedirectUrl,
-    @authResponseUrl,
+    @logFn
+    @disableLogging
+    @port
+    @exchangeDomainUrl
+    @formServiceUrl
+    @formSchemaUrl
+    @schemaUrl
+    @afterAuthRedirectUrl
+    @activeDirectoryConnectorUuid
+    @authResponseUrl
     @meshbluConfig
+    redisClient
   }) ->
     throw new Error 'Missing meshbluConfig' unless @meshbluConfig?
     throw new Error 'Missing afterAuthRedirectUrl' unless @afterAuthRedirectUrl?
@@ -28,13 +30,15 @@ class Server
     @meshbluHttp.setPrivateKey @meshbluConfig.privateKey
 
     @authService = new AuthService({
-      @meshbluHttp,
-      @meshbluConfig,
-      @exchangeDomainUrl,
-      @formServiceUrl,
-      @formSchemaUrl,
-      @authResponseUrl,
+      @meshbluHttp
+      @meshbluConfig
+      @exchangeDomainUrl
+      @formServiceUrl
+      @formSchemaUrl
+      @authResponseUrl
+      @activeDirectoryConnectorUuid
       @schemaUrl
+      redisClient
     })
 
   address: =>

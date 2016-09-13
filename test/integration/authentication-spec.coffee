@@ -1,12 +1,18 @@
-{beforeEach, describe, it} = global
+{afterEach, beforeEach, describe, it} = global
 {expect} = require 'chai'
-shmock        = require 'shmock'
-request       = require 'request'
-enableDestroy = require 'server-destroy'
-Server        = require '../../src/server'
-_             = require 'lodash'
+sinon = require 'sinon'
+
+fakeredis     = require 'fakeredis'
 fs            = require 'fs'
+_             = require 'lodash'
 path          = require 'path'
+redis         = require 'redis'
+request       = require 'request'
+shmock        = require 'shmock'
+enableDestroy = require 'server-destroy'
+uuid          = require 'uuid'
+
+Server        = require '../../src/server'
 
 CHALLENGE = _.trim fs.readFileSync path.join(__dirname, '../fixtures/challenge.b64'), encoding: 'utf8'
 NEGOTIATE = _.trim fs.readFileSync path.join(__dirname, '../fixtures/negotiate.b64'), encoding: 'utf8'
@@ -14,23 +20,36 @@ MESHBLU_PRIVATE_KEY = fs.readFileSync path.join(__dirname, '../fixtures/meshblu-
 
 describe 'Local Exchange Authenticator', ->
   beforeEach (done) ->
-    @meshblu = shmock()
+    @meshblu = shmock null, [
+      (req, res, next) =>
+        @requests[req.path] ?= []
+        @requests[req.path].push req
+        next()
+      ]
+
+    @requests = {}
     @exchangeServerMock = shmock()
     enableDestroy @meshblu
     enableDestroy @exchangeServerMock
+
+    clientId     = uuid.v1()
+    @redisClient = fakeredis.createClient(clientId)
+    redisClient  = fakeredis.createClient(clientId)
 
     @logFn = sinon.spy()
     serverOptions =
       port: undefined,
       disableLogging: true
       exchangeDomainUrl: "http://localhost:#{@exchangeServerMock.address().port}"
-
+      activeDirectoryConnectorUuid: '5eac0a575'
       formServiceUrl: 'https://form-service.octoblu.com'
       formSchemaUrl: 'https://meshblulocalexchange.localtunnel.me/public/schemas/api-authentication-form.cson'
       schemaUrl: 'https://meshblulocalexchange.localtunnel.me/public/schemas/api-authentication-form.cson'
       afterAuthRedirectUrl: 'http://zombo.com'
       authHostname: 'citrino.biz'
       logFn: @logFn
+      redisClient: redisClient
+      uuid: @uuid
       meshbluConfig:
         hostname: 'localhost'
         protocol: 'http'
@@ -115,12 +134,40 @@ describe 'Local Exchange Authenticator', ->
             .post '/devices'
             .reply 201, {uuid: 'user-uuid', token: 'user-token'}
 
+          messageHandler =
+            @meshblu
+              .post '/messages'
+              .reply 201
+
           @meshblu
             .patch '/v2/devices/user-uuid'
             .reply 204
 
+          messageHandler.wait (error) =>
+            return done error if error
+            message = _.first @requests['/messages']
+
+            responseId = message.body.metadata.respondTo
+            @redisClient.lpush responseId, JSON.stringify({
+              data:
+                displayName: 'Roy Zandewager'
+                email: 'roy.zandewager@citrix.com'
+            })
+
           request.post options, (error, @response, @body) =>
             done error
+
+        it 'Should call register', ->
+          expect(@requests['/devices']).to.containSubset [
+            body:
+              name: 'Roy Zandewager'
+              email: 'roy.zandewager@citrix.com'
+              meshblu:
+                version: '2.0.0'
+                whitelists:
+                  configure: update: [{uuid: 'authenticator-uuid'}]
+                  discover: view: [{uuid: 'authenticator-uuid'}]
+          ]
 
         it 'Should return a 201', ->
           expect(@response.statusCode).to.equal 201
@@ -128,6 +175,8 @@ describe 'Local Exchange Authenticator', ->
         it 'Should return a location header with a meshblu bearer token', ->
           bearerToken = encodeURIComponent new Buffer('user-uuid:user-token').toString('base64')
           expect(@response.headers.location).to.deep.equal "http://zombo.com/?bearerToken=#{bearerToken}"
+
+        it 'should message the exchange connector', ->
 
       describe 'when the meshblu device already exists', ->
         beforeEach 'request.post', (done) ->

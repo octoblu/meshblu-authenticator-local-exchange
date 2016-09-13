@@ -1,21 +1,25 @@
+_ = require 'lodash'
 url = require 'url'
 Bourse = require 'bourse'
 {DeviceAuthenticator} = require 'meshblu-authenticator-core'
 debug = require('debug')('meshblu-authenticator-local-exchange:service')
-
 FAKE_SECRET = 'local-exchange'
+uuid = require 'uuid'
 
 class AuthService
   constructor:({
-    @meshbluHttp,
-    @meshbluConfig,
-    @formServiceUrl,
-    @authResponseUrl,
-    @exchangeDomainUrl,
-    @formSchemaUrl,
-    @schemaUrl,
+    @activeDirectoryConnectorUuid
+    @authResponseUrl
+    @exchangeDomainUrl
+    @formSchemaUrl
+    @formServiceUrl
+    @meshbluConfig
+    @meshbluHttp
+    @schemaUrl
+    @redisClient
   }) ->
-    throw new Error 'Missing required parameter: exchangeDomainUrl' unless @exchangeDomainUrl?
+    throw new Error 'Missing required parameter: exchangeDomainUrl' if _.isEmpty @exchangeDomainUrl
+    throw new Error 'Missing required parameter: activeDirectoryConnectorUuid' if _.isEmpty @activeDirectoryConnectorUuid
     @authenticatorUuid = @meshbluConfig.uuid
     authenticatorName = @meshbluConfig.name
     @deviceModel = new DeviceAuthenticator {@authenticatorUuid, authenticatorName, @meshbluHttp}
@@ -43,18 +47,38 @@ class AuthService
         return @_generateToken {query, device}, callback
 
   _create: ({username, query}, callback) =>
-    @deviceModel.create {
-      query: query,
-      data: {
-        name: username
-      }
-      user_id: username
-      secret: FAKE_SECRET
-    }, (error, device) =>
+    @_getUserInfo username, (error, userInfo) =>
       return callback error if error?
-      return callback null, device
 
-  _generateToken: ({query, device}, callback) =>
+      @deviceModel.create {
+        query: query,
+        data: {
+          name: userInfo.displayName
+          email: userInfo.email
+        }
+        user_id: username
+        secret: FAKE_SECRET
+      }, (error, device) =>
+        return callback error if error?
+        return callback null, device
+
+  _getUserInfo: (username, callback) =>
+    message =
+      devices: [@activeDirectoryConnectorUuid]
+      metadata:
+        respondTo: uuid.v1()
+      data:
+        username: username
+
+    @meshbluHttp.message message, (error) =>
+      return callback error if error?
+      @redisClient.brpop message.metadata.respondTo, 15000, (error, result) =>
+        return callback error if error?
+        return callback new Error('Timeout') unless result?
+        {data} = JSON.parse _.last result
+        return callback null, data
+
+  _generateToken: ({device}, callback) =>
     @meshbluHttp.generateAndStoreToken device.uuid, (error, credentials) =>
       return callback error if error?
       callback null, credentials

@@ -4,17 +4,30 @@ Server        = require './src/server'
 
 class Command
   constructor: ->
-    @serverOptions = {
-      meshbluConfig:  new MeshbluConfig().toJSON()
-      port:           process.env.PORT || 80
-      afterAuthRedirectUrl: process.env.AFTER_AUTH_REDIRECT_URL
-      exchangeDomainUrl: process.env.EXCHANGE_DOMAIN_URL
-      formServiceUrl: process.env.FORM_SERVICE_URL
-      formSchemaUrl: process.env.FORM_SCHEMA_URL
-      schemaUrl: process.env.MESSAGE_SCHEMA_URL
-      authResponseUrl: process.env.AUTH_RESPONSE_URL
-      disableLogging: process.env.DISABLE_LOGGING == "true"
-      authHostname: process.env.AUTH_HOSTNAME
+
+  getOptions: =>
+    @panic new Error('Missing required environment variable: AUTH_RESPONSE_URL') if _.isEmpty process.env.AUTH_RESPONSE_URL
+    @panic new Error('Missing required environment variable: AFTER_AUTH_REDIRECT_URL') if _.isEmpty process.env.AFTER_AUTH_REDIRECT_URL
+    @panic new Error('Missing required environment variable: EXCHANGE_DOMAIN_URL') if _.isEmpty process.env.EXCHANGE_DOMAIN_URL
+    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty process.env.FORM_SERVICE_URL
+    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty process.env.FORM_SERVICE_URL
+    @panic new Error('Missing required environment variable: MESSAGE_SCHEMA_URL') if _.isEmpty process.env.MESSAGE_SCHEMA_URL
+    @panic new Error('Missing required environment variable: AUTH_HOSTNAME') if _.isEmpty process.env.AUTH_HOSTNAME
+    @panic new Error('Missing required environment variable: ACTIVE_DIRECTORY_CONNECTOR_UUID') if _.isEmpty process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
+    @panic new Error('Missing meshbluConfig') if _.isEmpty @serverOptions.meshbluConfig
+
+    return {
+      meshbluConfig:                new MeshbluConfig().toJSON()
+      port:                         process.env.PORT || 80
+      afterAuthRedirectUrl:         process.env.AFTER_AUTH_REDIRECT_URL
+      exchangeDomainUrl:            process.env.EXCHANGE_DOMAIN_URL
+      formServiceUrl:               process.env.FORM_SERVICE_URL
+      formSchemaUrl:                process.env.FORM_SCHEMA_URL
+      schemaUrl:                    process.env.MESSAGE_SCHEMA_URL
+      authResponseUrl:              process.env.AUTH_RESPONSE_URL
+      disableLogging:               process.env.DISABLE_LOGGING == "true"
+      authHostname:                 process.env.AUTH_HOSTNAME
+      activeDirectoryConnectorUuid: process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
     }
 
   panic: (error) =>
@@ -22,17 +35,7 @@ class Command
     process.exit 1
 
   run: =>
-    # Use this to require env
-    @panic new Error('Missing required environment variable: AUTH_RESPONSE_URL') if _.isEmpty @serverOptions.authResponseUrl
-    @panic new Error('Missing required environment variable: AFTER_AUTH_REDIRECT_URL') if _.isEmpty @serverOptions.afterAuthRedirectUrl
-    @panic new Error('Missing required environment variable: EXCHANGE_DOMAIN_URL') if _.isEmpty @serverOptions.exchangeDomainUrl
-    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formServiceUrl
-    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty @serverOptions.formSchemaUrl
-    @panic new Error('Missing required environment variable: MESSAGE_SCHEMA_URL') if _.isEmpty @serverOptions.schemaUrl
-    @panic new Error('Missing required environment variable: AUTH_HOSTNAME') if _.isEmpty @serverOptions.authHostname
-    @panic new Error('Missing meshbluConfig') if _.isEmpty @serverOptions.meshbluConfig
-
-    server = new Server @serverOptions
+    server = new Server @getOptions()
     server.run (error) =>
       return @panic error if error?
 
