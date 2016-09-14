@@ -2,7 +2,7 @@ _             = require 'lodash'
 MeshbluConfig = require 'meshblu-config'
 Server        = require './src/server'
 IORedis         = require 'ioredis'
-RedisNS       = require 'redis-ns'
+RedisNS       = require '@octoblu/redis-ns'
 
 class Command
   getOptions: =>

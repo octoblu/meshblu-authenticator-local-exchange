@@ -1,6 +1,6 @@
 {
   "name": "meshblu-authenticator-local-exchange",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "meshblu-authenticator-local-exchange an Octoblu Service",
   "keywords": [
     "Octoblu",
@@ -47,7 +47,6 @@
     "meshblu-config": "^6.0.0",
     "meshblu-http": "^7.2.0",
     "ntlm": "^0.1.1",
-    "redis-ns": "^0.2.0",
     "serve-static": "^1.11.1",
     "server-destroy": "^1.0.1",
     "uuid": "^2.0.2",

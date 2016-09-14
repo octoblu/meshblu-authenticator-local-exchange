@@ -72,6 +72,7 @@ class AuthService
     message =
       devices: [@activeDirectoryConnectorUuid]
       metadata:
+        jobType: 'GetUser'
         respondTo: uuid.v1()
       data:
         username: username
