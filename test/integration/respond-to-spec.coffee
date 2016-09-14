@@ -46,11 +46,11 @@ describe 'Local Exchange Authenticator', ->
       @serverPort = @server.address().port
       done()
 
-  describe 'on POST /message', ->
+  describe 'on POST /messages', ->
     describe 'When given a response message', ->
       beforeEach (done) ->
         options =
-          uri: '/message'
+          uri: '/messages'
           baseUrl: "http://localhost:#{@serverPort}"
           json:
             metadata:
@@ -78,7 +78,7 @@ describe 'Local Exchange Authenticator', ->
     describe 'When given a response message without a to', ->
       beforeEach (done) ->
         options =
-          uri: '/message'
+          uri: '/messages'
           baseUrl: "http://localhost:#{@serverPort}"
           json:
             data:
