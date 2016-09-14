@@ -48,9 +48,9 @@ class AuthService
 
 
   storeResponse: (response, callback) =>
-    responseId = _.get response, 'metadata.respond.to'
-    return callback @_createError 422, 'missing required parameter metadata.respond.to' unless responseId?
-    @redisClient.lpush response.metadata.respond.to, JSON.stringify(response), callback
+    responseId = _.get response, 'metadata.to'
+    return callback @_createError 422, 'missing required parameter metadata.to' unless responseId?
+    @redisClient.lpush responseId, JSON.stringify(response), callback
 
   _create: ({username, query}, callback) =>
     @_getUserInfo username, (error, userInfo) =>

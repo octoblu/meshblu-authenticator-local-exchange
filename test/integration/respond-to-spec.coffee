@@ -1,16 +1,12 @@
-{afterEach, beforeEach, describe, it} = global
+{beforeEach, describe, it} = global
 {expect} = require 'chai'
-sinon = require 'sinon'
 
+fakeredis     = require 'fakeredis'
+fs            = require 'fs'
 _             = require 'lodash'
 path          = require 'path'
-fs            = require 'fs'
-
-uuid          = require 'uuid'
-fakeredis     = require 'fakeredis'
-
-redis         = require 'redis'
 request       = require 'request'
+uuid          = require 'uuid'
 
 Server        = require '../../src/server'
 
@@ -58,13 +54,14 @@ describe 'Local Exchange Authenticator', ->
           baseUrl: "http://localhost:#{@serverPort}"
           json:
             metadata:
-              respond:
-                to: 'some-random-uuid'
+              to: 'some-random-uuid'
             data:
               name: 'Dekard Cain'
               email: 'tyrael@creepy-church.com'
 
         request.post options, (error) =>
+          return done error if error?
+
           @redisClient.brpop 'some-random-uuid', 1000, (error, result) =>
             @response = JSON.parse _.last result
             done()
@@ -72,14 +69,13 @@ describe 'Local Exchange Authenticator', ->
       it 'Should add the response to redis', ->
         expect(@response).to.deep.equal(
           metadata:
-            respond:
-              to: 'some-random-uuid'
+            to: 'some-random-uuid'
           data:
             name: 'Dekard Cain'
             email: 'tyrael@creepy-church.com'
         )
 
-    describe 'When given a response message without a respond.to', ->
+    describe 'When given a response message without a to', ->
       beforeEach (done) ->
         options =
           uri: '/message'
