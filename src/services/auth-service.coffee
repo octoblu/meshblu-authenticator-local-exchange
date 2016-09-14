@@ -48,7 +48,10 @@ class AuthService
   storeResponse: ({redisClient, response}, callback) =>
     responseId = _.get response, 'metadata.to'
     return callback @_createError 422, 'missing required parameter metadata.to' unless responseId?
-    redisClient.lpush responseId, JSON.stringify(response), callback
+        
+    redisClient.lpush responseId, JSON.stringify(response), (error) =>
+      return callback error if error?
+      redisClient.expire responseId, 15, callback
 
   _create: ({redisClient, username, query}, callback) =>
     @_getUserInfo {redisClient, username}, (error, userInfo) =>
