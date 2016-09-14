@@ -1,7 +1,7 @@
 _             = require 'lodash'
 MeshbluConfig = require 'meshblu-config'
 Server        = require './src/server'
-redis         = require 'ioredis'
+IORedis         = require 'ioredis'
 RedisNS       = require 'redis-ns'
 
 class Command
@@ -16,6 +16,9 @@ class Command
     @panic new Error('Missing required environment variable: ACTIVE_DIRECTORY_CONNECTOR_UUID') if _.isEmpty process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
     @panic new Error('Missing required environment variable: REDIS_URI') if _.isEmpty process.env.REDIS_URI
 
+    redisClient = new RedisNS 'meshblu-authenticator-local-exchange', new IORedis process.env.REDIS_URI
+    redisClient.on 'error', @panic
+
     return {
       meshbluConfig:                new MeshbluConfig().toJSON()
       port:                         process.env.PORT || 80
@@ -28,12 +31,12 @@ class Command
       disableLogging:               process.env.DISABLE_LOGGING == "true"
       authHostname:                 process.env.AUTH_HOSTNAME
       activeDirectoryConnectorUuid: process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
-      redisClient:                  new RedisNS 'meshblu-authenticator-local-exchange', new redis process.env.REDIS_URI
+      redisClient:                  redisClient
     }
 
   panic: (error) =>
     console.error error.stack
-    process.exit 1
+    process.abort() # process.exit(1) wouldn't die immediately?
 
   run: =>
     server = new Server @getOptions()
