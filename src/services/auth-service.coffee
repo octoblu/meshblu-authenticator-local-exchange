@@ -78,7 +78,7 @@ class AuthService
 
     @meshbluHttp.message message, (error) =>
       return callback error if error?
-      @redisClient.brpop message.metadata.respondTo, 15000, (error, result) =>
+      @redisClient.brpop message.metadata.respondTo, 15, (error, result) =>
         return callback error if error?
         return callback new Error('Timeout') unless result?
         {data} = JSON.parse _.last result
