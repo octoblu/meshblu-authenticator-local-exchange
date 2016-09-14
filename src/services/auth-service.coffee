@@ -2,7 +2,6 @@ _ = require 'lodash'
 url = require 'url'
 Bourse = require 'bourse'
 {DeviceAuthenticator} = require 'meshblu-authenticator-core'
-debug = require('debug')('meshblu-authenticator-local-exchange:service')
 FAKE_SECRET = 'local-exchange'
 uuid = require 'uuid'
 
@@ -16,7 +15,6 @@ class AuthService
     @meshbluConfig
     @meshbluHttp
     @schemaUrl
-    @redisClient
   }) ->
     throw new Error 'Missing required parameter: exchangeDomainUrl' if _.isEmpty @exchangeDomainUrl
     throw new Error 'Missing required parameter: activeDirectoryConnectorUuid' if _.isEmpty @activeDirectoryConnectorUuid
@@ -33,7 +31,7 @@ class AuthService
     }
     return url.format {protocol, hostname, port, pathname, query}
 
-  authenticate: ({username, password}, callback) =>
+  authenticate: ({redisClient, username, password}, callback) =>
     {protocol, hostname, port}  = url.parse @exchangeDomainUrl
     bourse = new Bourse {protocol, hostname, port, password, username: username}
     bourse.authenticate (error, authenticated) =>
@@ -43,17 +41,17 @@ class AuthService
       query = @_getQuery { id: username }
       @deviceModel.findVerified {query, password: FAKE_SECRET}, (error, device) =>
         return callback error if error?
-        return @_create {username, query}, callback unless device?
+        return @_create {redisClient, username, query}, callback unless device?
         return @_generateToken {query, device}, callback
 
 
-  storeResponse: (response, callback) =>
+  storeResponse: ({redisClient, response}, callback) =>
     responseId = _.get response, 'metadata.to'
     return callback @_createError 422, 'missing required parameter metadata.to' unless responseId?
-    @redisClient.lpush responseId, JSON.stringify(response), callback
+    redisClient.lpush responseId, JSON.stringify(response), callback
 
-  _create: ({username, query}, callback) =>
-    @_getUserInfo username, (error, userInfo) =>
+  _create: ({redisClient, username, query}, callback) =>
+    @_getUserInfo {redisClient, username}, (error, userInfo) =>
       return callback error if error?
 
       @deviceModel.create {
@@ -68,7 +66,7 @@ class AuthService
         return callback error if error?
         return callback null, device
 
-  _getUserInfo: (username, callback) =>
+  _getUserInfo: ({redisClient, username}, callback) =>
     message =
       devices: [@activeDirectoryConnectorUuid]
       metadata:
@@ -79,7 +77,7 @@ class AuthService
 
     @meshbluHttp.message message, (error) =>
       return callback error if error?
-      @redisClient.brpop message.metadata.respondTo, 15, (error, result) =>
+      redisClient.brpop message.metadata.respondTo, 15, (error, result) =>
         return callback error if error?
         return callback new Error('Timeout') unless result?
         {data} = JSON.parse _.last result

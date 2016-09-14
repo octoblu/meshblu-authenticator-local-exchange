@@ -1,6 +1,6 @@
 {
   "name": "meshblu-authenticator-local-exchange",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "description": "meshblu-authenticator-local-exchange an Octoblu Service",
   "keywords": [
     "Octoblu",
@@ -41,6 +41,7 @@
     "debug": "^2.2.0",
     "express-meshblu-auth": "^7.0.0",
     "express-octoblu": "^1.1.1",
+    "express-redis-pooled-client": "^1.0.2",
     "ioredis": "^2.3.0",
     "lodash": "^4.15.0",
     "meshblu-authenticator-core": "^4.0.1",

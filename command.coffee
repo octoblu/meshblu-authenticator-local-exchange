@@ -28,6 +28,7 @@ class Command
       disableLogging:               process.env.DISABLE_LOGGING == "true"
       authHostname:                 process.env.AUTH_HOSTNAME
       activeDirectoryConnectorUuid: process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
+      redisUri:                     process.env.REDIS_URI
     }
 
   panic: (error) =>
@@ -35,26 +36,26 @@ class Command
     process.abort() # process.exit(1) wouldn't die immediately?
 
   run: =>
-    redisClient = new IORedis process.env.REDIS_URI
-    redisClient.on 'error', @panic
-    redisClient.once 'ready', =>
+    # redisClient = new IORedis process.env.REDIS_URI
+    # redisClient.on 'error', @panic
+    # redisClient.once 'ready', =>
+    #
+    #   options = _.defaults({
+    #     redisClient: new RedisNS 'meshblu-authenticator-local-exchange', redisClient
+    #   }, @getOptions())
+    #
+    server = new Server @getOptions()
+    server.run (error) =>
+      return @panic error if error?
 
-      options = _.defaults({
-        redisClient: new RedisNS 'meshblu-authenticator-local-exchange', redisClient
-      }, @getOptions())
+      {address,port} = server.address()
+      console.log "MeshbluAuthenticatorLocalExchangeService listening on port: #{port}"
 
-      server = new Server options
-      server.run (error) =>
-        return @panic error if error?
-
-        {address,port} = server.address()
-        console.log "MeshbluAuthenticatorLocalExchangeService listening on port: #{port}"
-
-      process.on 'SIGTERM', =>
-        console.log 'SIGTERM caught, exiting'
-        return process.exit 0 unless server?.stop?
-        server.stop =>
-          process.exit 0
+    process.on 'SIGTERM', =>
+      console.log 'SIGTERM caught, exiting'
+      return process.exit 0 unless server?.stop?
+      server.stop =>
+        process.exit 0
 
 command = new Command()
 command.run()

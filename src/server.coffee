@@ -1,12 +1,14 @@
-cors           = require 'cors'
-enableDestroy  = require 'server-destroy'
-octobluExpress = require 'express-octoblu'
-MeshbluAuth    = require 'express-meshblu-auth'
-MeshbluHttp    = require 'meshblu-http'
-Router         = require './router'
-AuthService    = require './services/auth-service'
-debug          = require('debug')('meshblu-authenticator-local-exchange:server')
-serveStatic = require 'serve-static'
+cors              = require 'cors'
+enableDestroy     = require 'server-destroy'
+octobluExpress    = require 'express-octoblu'
+MeshbluAuth       = require 'express-meshblu-auth'
+RedisPooledClient = require 'express-redis-pooled-client'
+MeshbluHttp       = require 'meshblu-http'
+morgan            = require 'morgan'
+
+debug       = require('debug')('meshblu-authenticator-local-exchange:server')
+Router      = require './router'
+AuthService = require './services/auth-service'
 
 class Server
   constructor: ({
@@ -21,11 +23,11 @@ class Server
     @activeDirectoryConnectorUuid
     @authResponseUrl
     @meshbluConfig
-    redisClient
+    @redisUri
   }) ->
-    throw new Error 'Missing meshbluConfig' unless @meshbluConfig?
     throw new Error 'Missing afterAuthRedirectUrl' unless @afterAuthRedirectUrl?
-    throw new Error 'Missing redisClient' unless redisClient?
+    throw new Error 'Missing meshbluConfig' unless @meshbluConfig?
+    throw new Error 'Missing redisUri' unless @redisUri?
 
     @meshbluHttp = new MeshbluHttp @meshbluConfig
     @meshbluHttp.setPrivateKey @meshbluConfig.privateKey
@@ -39,8 +41,14 @@ class Server
       @authResponseUrl
       @activeDirectoryConnectorUuid
       @schemaUrl
-      redisClient
     })
+
+    @redisPooledClient = new RedisPooledClient {
+      maxConnections: 5
+      minConnections: 1
+      namespace: 'meshblu-authenticator-local-exchange'
+      redisUri: @redisUri
+    }
 
   address: =>
     @server.address()
@@ -48,6 +56,8 @@ class Server
   run: (callback) =>
     app = octobluExpress({ @logFn, @disableLogging, disableCors: true })
     app.use cors(exposedHeaders: ['Location', 'location'])
+    app.use morgan('dev', immediate: true)
+    app.use @redisPooledClient.middleware
 
     router = new Router {@meshbluConfig, @afterAuthRedirectUrl, @authService}
     router.route app

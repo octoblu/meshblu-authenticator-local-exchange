@@ -1,12 +1,12 @@
 {beforeEach, describe, it} = global
 {expect} = require 'chai'
 
-fakeredis     = require 'fakeredis'
 fs            = require 'fs'
+IORedis       = require 'ioredis'
 _             = require 'lodash'
 path          = require 'path'
+RedisNS       = require '@octoblu/redis-ns'
 request       = require 'request'
-uuid          = require 'uuid'
 
 Server        = require '../../src/server'
 
@@ -14,9 +14,7 @@ MESHBLU_PRIVATE_KEY = fs.readFileSync path.join(__dirname, '../fixtures/meshblu-
 
 describe 'Local Exchange Authenticator', ->
   beforeEach (done) ->
-    clientId      = uuid.v1()
-    @redisClient  = fakeredis.createClient(clientId)
-    redisClient   = fakeredis.createClient(clientId)
+    @redisClient = new RedisNS 'meshblu-authenticator-local-exchange', new IORedis('redis://localhost:6379', dropBufferSupport: true)
 
     serverOptions =
       port: undefined,
@@ -29,7 +27,7 @@ describe 'Local Exchange Authenticator', ->
       afterAuthRedirectUrl: 'http://zombo.com'
       authHostname: 'citrino.biz'
       logFn: @logFn
-      redisClient: redisClient
+      redisUri: 'redis://localhost:6379'
       uuid: @uuid
       meshbluConfig:
         hostname: 'localhost'

@@ -5,21 +5,25 @@ class AuthController
     throw new Error 'Missing authService' unless @authService?
     throw new Error 'Missing afterAuthRedirectUrl' unless @afterAuthRedirectUrl?
 
-  signin: (request, response ) =>
-    return response.redirect(301, @authService.getAuthorizationUrl())
+  signin: (req, res) =>
+    return res.redirect(301, @authService.getAuthorizationUrl())
 
-  authenticate: (request, response) =>
-    { username, password } = request.body
-    @authService.authenticate {username, password}, (error, user) =>
-      return response.sendError error if error?
-      return response.sendStatus 401 unless user?
-      return response.redirect(201, @_buildRedirectUrl({user}))
+  authenticate: (req, res) =>
+    redisClient = req.redisClient
+    { username, password } = req.body
 
+    @authService.authenticate {redisClient, username, password}, (error, user) =>
+      return res.sendError error if error?
+      return res.sendStatus 401 unless user?
+      return res.redirect(201, @_buildRedirectUrl({user}))
 
-  message: (request, response) =>
-    @authService.storeResponse request.body, (error) =>
-      return response.sendError error if error?
-      return response.sendStatus 204
+  message: (req, res) =>
+    redisClient = req.redisClient
+    response = req.body
+
+    @authService.storeResponse {redisClient, response}, (error) =>
+      return res.sendError error if error?
+      return res.sendStatus 204
 
   _buildRedirectUrl: ({user}) =>
     bearerToken = new Buffer("#{user.uuid}:#{user.token}").toString 'base64'

@@ -2,15 +2,14 @@
 {expect} = require 'chai'
 sinon = require 'sinon'
 
-fakeredis     = require 'fakeredis'
 fs            = require 'fs'
+IORedis       = require 'ioredis'
 _             = require 'lodash'
 path          = require 'path'
-redis         = require 'redis'
+RedisNS       = require '@octoblu/redis-ns'
 request       = require 'request'
 shmock        = require 'shmock'
 enableDestroy = require 'server-destroy'
-uuid          = require 'uuid'
 
 Server        = require '../../src/server'
 
@@ -32,9 +31,7 @@ describe 'Local Exchange Authenticator', ->
     enableDestroy @meshblu
     enableDestroy @exchangeServerMock
 
-    clientId     = uuid.v1()
-    @redisClient = fakeredis.createClient(clientId)
-    redisClient  = fakeredis.createClient(clientId)
+    @redisClient = new RedisNS 'meshblu-authenticator-local-exchange', new IORedis('redis://localhost:6379', dropBufferSupport: true)
 
     @logFn = sinon.spy()
     serverOptions =
@@ -48,7 +45,7 @@ describe 'Local Exchange Authenticator', ->
       afterAuthRedirectUrl: 'http://zombo.com'
       authHostname: 'citrino.biz'
       logFn: @logFn
-      redisClient: redisClient
+      redisUri: 'redis://localhost:6379'
       uuid: @uuid
       meshbluConfig:
         hostname: 'localhost'
