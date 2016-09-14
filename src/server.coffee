@@ -4,7 +4,6 @@ octobluExpress    = require 'express-octoblu'
 MeshbluAuth       = require 'express-meshblu-auth'
 RedisPooledClient = require 'express-redis-pooled-client'
 MeshbluHttp       = require 'meshblu-http'
-morgan            = require 'morgan'
 
 debug       = require('debug')('meshblu-authenticator-local-exchange:server')
 Router      = require './router'
@@ -56,7 +55,6 @@ class Server
   run: (callback) =>
     app = octobluExpress({ @logFn, @disableLogging, disableCors: true })
     app.use cors(exposedHeaders: ['Location', 'location'])
-    app.use morgan('dev', immediate: true)
     app.use @redisPooledClient.middleware
 
     router = new Router {@meshbluConfig, @afterAuthRedirectUrl, @authService}
