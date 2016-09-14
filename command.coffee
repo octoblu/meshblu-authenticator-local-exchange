@@ -16,9 +16,6 @@ class Command
     @panic new Error('Missing required environment variable: ACTIVE_DIRECTORY_CONNECTOR_UUID') if _.isEmpty process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
     @panic new Error('Missing required environment variable: REDIS_URI') if _.isEmpty process.env.REDIS_URI
 
-    redisClient = new RedisNS 'meshblu-authenticator-local-exchange', new IORedis process.env.REDIS_URI
-    redisClient.on 'error', @panic
-
     return {
       meshbluConfig:                new MeshbluConfig().toJSON()
       port:                         process.env.PORT || 80
@@ -31,7 +28,6 @@ class Command
       disableLogging:               process.env.DISABLE_LOGGING == "true"
       authHostname:                 process.env.AUTH_HOSTNAME
       activeDirectoryConnectorUuid: process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
-      redisClient:                  redisClient
     }
 
   panic: (error) =>
@@ -39,18 +35,26 @@ class Command
     process.abort() # process.exit(1) wouldn't die immediately?
 
   run: =>
-    server = new Server @getOptions()
-    server.run (error) =>
-      return @panic error if error?
+    redisClient = new IORedis process.env.REDIS_URI
+    redisClient.on 'error', @panic
+    redisClient.once 'ready', =>
 
-      {address,port} = server.address()
-      console.log "MeshbluAuthenticatorLocalExchangeService listening on port: #{port}"
+      options = _.defaults({
+        redisClient: new RedisNS 'meshblu-authenticator-local-exchange', redisClient
+      }, @getOptions())
 
-    process.on 'SIGTERM', =>
-      console.log 'SIGTERM caught, exiting'
-      return process.exit 0 unless server?.stop?
-      server.stop =>
-        process.exit 0
+      server = new Server options
+      server.run (error) =>
+        return @panic error if error?
+
+        {address,port} = server.address()
+        console.log "MeshbluAuthenticatorLocalExchangeService listening on port: #{port}"
+
+      process.on 'SIGTERM', =>
+        console.log 'SIGTERM caught, exiting'
+        return process.exit 0 unless server?.stop?
+        server.stop =>
+          process.exit 0
 
 command = new Command()
 command.run()
