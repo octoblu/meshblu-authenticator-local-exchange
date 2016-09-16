@@ -1,11 +1,15 @@
 # meshblu-authenticator-local-exchange
 
-
+[![Build Status](https://travis-ci.org/octoblu/meshblu-authenticator-local-exchange.svg?branch=master)](https://travis-ci.org/octoblu/meshblu-authenticator-local-exchange)
+[![Test Coverage](https://codecov.io/gh/octoblu/meshblu-authenticator-local-exchange/branch/master/graph/badge.svg)](https://codecov.io/gh/octoblu/meshblu-authenticator-local-exchange)
 [![Dependency status](http://img.shields.io/david/octoblu/meshblu-authenticator-local-exchange.svg?style=flat)](https://david-dm.org/octoblu/meshblu-authenticator-local-exchange)
 [![devDependency Status](http://img.shields.io/david/dev/octoblu/meshblu-authenticator-local-exchange.svg?style=flat)](https://david-dm.org/octoblu/meshblu-authenticator-local-exchange#info=devDependencies)
-[![Build Status](http://img.shields.io/travis/octoblu/meshblu-authenticator-local-exchange.svg?style=flat)](https://travis-ci.org/octoblu/meshblu-authenticator-local-exchange)
+[![Slack Status](http://community-slack.octoblu.com/badge.svg)](http://community-slack.octoblu.com)
 
 [![NPM](https://nodei.co/npm/meshblu-authenticator-local-exchange.svg?style=flat)](https://npmjs.org/package/meshblu-authenticator-local-exchange)
+
+[![Dependency status](http://img.shields.io/david/octoblu/meshblu-authenticator-local-exchange.svg?style=flat)](https://david-dm.org/octoblu/meshblu-authenticator-local-exchange)
+
 
 # Table of Contents
 
