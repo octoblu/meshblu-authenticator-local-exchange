@@ -3,7 +3,6 @@ node_js:
 - '5'
 services:
 - redis
-    - /^v[0-9]/
 addons:
   code_climate:
     repo_token: 9a2acebdb7a1b4bfb464966f2d259d0d0947d65cd54366f37e2b3ba786810399
@@ -31,3 +30,6 @@ after_success:
 - npm run mocha:json
 - bash <(curl -s https://codecov.io/bash)
 - bash <(curl -s https://codecov.octoblu.com/bash)
+branches:
+  only:
+  - "/^v[0-9]/"
