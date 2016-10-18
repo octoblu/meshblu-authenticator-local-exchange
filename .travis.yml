@@ -1,35 +1,39 @@
 language: node_js
 node_js:
-- '5'
+  - '5'
 services:
-- redis
+  - redis
 addons:
   code_climate:
     repo_token: 9a2acebdb7a1b4bfb464966f2d259d0d0947d65cd54366f37e2b3ba786810399
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-    - g++-4.8
+      - g++-4.8
 env:
   - CXX=g++-4.8
 before_script:
-- npm install -g codeclimate-test-reporter
+  - npm install -g codeclimate-test-reporter
 after_script:
-- codeclimate-test-reporter < coverage/lcov.info
+  - codeclimate-test-reporter < coverage/lcov.info
 deploy:
   provider: npm
   email: serveradmin@octoblu.com
   api_key:
-    secure: ILcFHOyuXi+KlHExuCGi3kEiVr8PAvPev2sEHnxdu1yHQ5wTnIpyoyuFOhMDIw8B1BY1a5K5AJ4b1iCKvugXCilGSanf/EPwXJPHoQwwd0brjSs7loJa8vkg65YLYAq2zFTTPvRda9H2DbykitRmKG9v7PYu1n6hgvLksB6wrEkmy1pooHHjXNpVt92acDphgO4b1dc4g60IUq9rla8ON/AMdqdmEUSRoarsRIhMLz4GwpyX3KUuOggRNcHZQCe8hoiFC+TE0e//9ga6WbpldExOBxt8beHypAU4wwOYdD0cBoTzcAjpkKUqQ4xTNGDfaeZD8SUbn99aHoItaxxqgWFNhePB/ROn699A0TMmi47bo5Nsw5tow3OOym2ioXzw5E2qrjyCJPaCcjNUVFusqTVw3p1MWvuRuo81C+1rAOzAsYth8R1pc59XwXubDakKM6BBJfDFp+5qnNpC+JrXjJ95jaECMcJ4QMsVa8pkax8Pw4rile7ZRReR0u9xRXoYZqgIIc7HAmwobLaKtdv8IdVo6A+PU4zWCa5OoVhlBUO8zXOcPe8me/1nkrOMZuY50zYuKStNDgMe1AoKFywPw4buGol5pemqopMfpJWdE9+qdXMDYk74ucEK+f9FUyVwipkdzntAyIfm5O94BF3LmaWqw/hbRVSNDKFZDBorM+8=
-  on:
+    secure: >-
+      ILcFHOyuXi+KlHExuCGi3kEiVr8PAvPev2sEHnxdu1yHQ5wTnIpyoyuFOhMDIw8B1BY1a5K5AJ4b1iCKvugXCilGSanf/EPwXJPHoQwwd0brjSs7loJa8vkg65YLYAq2zFTTPvRda9H2DbykitRmKG9v7PYu1n6hgvLksB6wrEkmy1pooHHjXNpVt92acDphgO4b1dc4g60IUq9rla8ON/AMdqdmEUSRoarsRIhMLz4GwpyX3KUuOggRNcHZQCe8hoiFC+TE0e//9ga6WbpldExOBxt8beHypAU4wwOYdD0cBoTzcAjpkKUqQ4xTNGDfaeZD8SUbn99aHoItaxxqgWFNhePB/ROn699A0TMmi47bo5Nsw5tow3OOym2ioXzw5E2qrjyCJPaCcjNUVFusqTVw3p1MWvuRuo81C+1rAOzAsYth8R1pc59XwXubDakKM6BBJfDFp+5qnNpC+JrXjJ95jaECMcJ4QMsVa8pkax8Pw4rile7ZRReR0u9xRXoYZqgIIc7HAmwobLaKtdv8IdVo6A+PU4zWCa5OoVhlBUO8zXOcPe8me/1nkrOMZuY50zYuKStNDgMe1AoKFywPw4buGol5pemqopMfpJWdE9+qdXMDYk74ucEK+f9FUyVwipkdzntAyIfm5O94BF3LmaWqw/hbRVSNDKFZDBorM+8=
+  'on':
     tags: true
     branches: true
 after_success:
-- npm run coverage
-- npm run mocha:json
-- bash <(curl -s https://codecov.io/bash)
-- bash <(curl -s https://codecov.octoblu.com/bash)
+  - npm run coverage
+  - 'npm run mocha:json'
+  - 'bash <(curl -s https://codecov.io/bash)'
+  - 'bash <(curl -s https://codecov.octoblu.com/bash)'
 branches:
   only:
-  - "/^v[0-9]/"
+    - '/^v[0-9]/'
+notifications:
+  webhooks:
+    - 'https://beekeeper.octoblu.com/webhooks/travis:ci'
