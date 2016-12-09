@@ -119,12 +119,12 @@ describe 'Local Exchange Authenticator', ->
 
           @meshblu
             .post '/search/devices'
-            .send 'authenticator-uuid.id': 'foo'
+            .send 'authenticator-uuid.id': 'foo', 'meshblu.search.terms': 'authenticator-uuid'
             .reply 200, []
 
           @meshblu
             .get '/v2/devices'
-            .query 'authenticator-uuid.id': 'foo'
+            .query 'authenticator-uuid.id': 'foo', 'meshblu.search.terms': 'authenticator-uuid'
             .reply 200, []
 
           @meshblu
@@ -196,7 +196,7 @@ describe 'Local Exchange Authenticator', ->
 
           @meshblu
             .post '/search/devices'
-            .send 'authenticator-uuid.id': 'foo'
+            .send 'authenticator-uuid.id': 'foo', 'meshblu.search.terms': 'authenticator-uuid'
             .reply 200, [{
                 uuid: 'user-uuid'
                 token: 'hashed-user-token'

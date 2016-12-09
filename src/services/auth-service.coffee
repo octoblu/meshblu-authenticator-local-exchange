@@ -48,7 +48,7 @@ class AuthService
   storeResponse: ({redisClient, response}, callback) =>
     responseId = _.get response, 'metadata.to'
     return callback @_createError 422, 'missing required parameter metadata.to' unless responseId?
-        
+
     redisClient.lpush responseId, JSON.stringify(response), (error) =>
       return callback error if error?
       redisClient.expire responseId, 15, callback
@@ -92,7 +92,7 @@ class AuthService
       callback null, credentials
 
   _getQuery: ({id}) =>
-    query = {}
+    query = { 'meshblu.search.terms': @authenticatorUuid }
     query["#{@authenticatorUuid}.id"] = id
     return query
 
