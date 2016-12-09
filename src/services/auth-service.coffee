@@ -82,7 +82,7 @@ class AuthService
       return callback error if error?
       redisClient.brpop message.metadata.respondTo, 15, (error, result) =>
         return callback error if error?
-        return callback new Error('Timeout') unless result?
+        return callback new Error('Activedirectory Connector Response Timeout') unless result?
         {data} = JSON.parse _.last result
         return callback null, data
 
