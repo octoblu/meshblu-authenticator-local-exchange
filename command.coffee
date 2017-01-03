@@ -10,9 +10,7 @@ class Command
     @panic new Error('Missing required environment variable: AFTER_AUTH_REDIRECT_URL') if _.isEmpty process.env.AFTER_AUTH_REDIRECT_URL
     @panic new Error('Missing required environment variable: EXCHANGE_DOMAIN_URL') if _.isEmpty process.env.EXCHANGE_DOMAIN_URL
     @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty process.env.FORM_SERVICE_URL
-    @panic new Error('Missing required environment variable: FORM_SERVICE_URL') if _.isEmpty process.env.FORM_SERVICE_URL
     @panic new Error('Missing required environment variable: MESSAGE_SCHEMA_URL') if _.isEmpty process.env.MESSAGE_SCHEMA_URL
-    @panic new Error('Missing required environment variable: AUTH_HOSTNAME') if _.isEmpty process.env.AUTH_HOSTNAME
     @panic new Error('Missing required environment variable: ACTIVE_DIRECTORY_CONNECTOR_UUID') if _.isEmpty process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
     @panic new Error('Missing required environment variable: REDIS_URI') if _.isEmpty process.env.REDIS_URI
 
@@ -26,7 +24,6 @@ class Command
       schemaUrl:                    process.env.MESSAGE_SCHEMA_URL
       authResponseUrl:              process.env.AUTH_RESPONSE_URL
       disableLogging:               process.env.DISABLE_LOGGING == "true"
-      authHostname:                 process.env.AUTH_HOSTNAME
       activeDirectoryConnectorUuid: process.env.ACTIVE_DIRECTORY_CONNECTOR_UUID
       redisUri:                     process.env.REDIS_URI
     }

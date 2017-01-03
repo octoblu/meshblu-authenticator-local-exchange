@@ -1,13 +1,12 @@
 cors              = require 'cors'
 enableDestroy     = require 'server-destroy'
 octobluExpress    = require 'express-octoblu'
-MeshbluAuth       = require 'express-meshblu-auth'
 RedisPooledClient = require 'express-redis-pooled-client'
 MeshbluHttp       = require 'meshblu-http'
 
-debug       = require('debug')('meshblu-authenticator-local-exchange:server')
-Router      = require './router'
-AuthService = require './services/auth-service'
+Router             = require './router'
+AuthService        = require './services/auth-service'
+HealthcheckService = require './services/healthcheck-service'
 
 class Server
   constructor: ({
@@ -42,6 +41,8 @@ class Server
       @schemaUrl
     })
 
+    @healthcheckService = new HealthcheckService({ @meshbluConfig })
+
     @redisPooledClient = new RedisPooledClient {
       maxConnections: 5
       minConnections: 1
@@ -57,7 +58,7 @@ class Server
     app.use cors(exposedHeaders: ['Location', 'location'])
     app.use @redisPooledClient.middleware
 
-    router = new Router {@meshbluConfig, @afterAuthRedirectUrl, @authService}
+    router = new Router {@afterAuthRedirectUrl, @authService, @healthcheckService}
     router.route app
 
     @server = app.listen @port, callback
