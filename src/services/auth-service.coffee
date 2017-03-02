@@ -33,7 +33,7 @@ class AuthService
 
   authenticate: ({redisClient, username, password}, callback) =>
     {protocol, hostname, port}  = url.parse @exchangeDomainUrl
-    bourse = new Bourse {protocol, hostname, port, password, username: username}
+    bourse = new Bourse {protocol, hostname, port, password, username}
     bourse.authenticate (error, authenticated) =>
       return callback error if error?
       return callback @_createError 401, 'Unauthorized' unless authenticated

@@ -73,7 +73,7 @@ describe 'Local Exchange Authenticator', ->
 
   describe 'on POST /authenticate', ->
     describe 'when the user authentication is invalid', ->
-      beforeEach (done) ->
+      beforeEach 'do the post', (done) ->
         options =
           uri: '/authenticate'
           baseUrl: "http://localhost:#{@serverPort}"
@@ -83,7 +83,7 @@ describe 'Local Exchange Authenticator', ->
           }
 
         @negotiate = @exchangeServerMock
-          .post '/EWS/Exchange.asmx'
+          .get '/EWS/Exchange.asmx'
           .set 'Authorization', NEGOTIATE
           .reply 401, '', {'WWW-Authenticate': CHALLENGE}
 
@@ -109,7 +109,7 @@ describe 'Local Exchange Authenticator', ->
             }
 
           @negotiate = @exchangeServerMock
-            .post '/EWS/Exchange.asmx'
+            .get '/EWS/Exchange.asmx'
             .set 'Authorization', NEGOTIATE
             .reply 401, '', {'WWW-Authenticate': CHALLENGE}
 
@@ -186,7 +186,7 @@ describe 'Local Exchange Authenticator', ->
             }
 
           @negotiate = @exchangeServerMock
-            .post '/EWS/Exchange.asmx'
+            .get '/EWS/Exchange.asmx'
             .set 'Authorization', NEGOTIATE
             .reply 401, '', {'WWW-Authenticate': CHALLENGE}
 

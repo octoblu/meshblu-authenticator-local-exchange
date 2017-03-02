@@ -56,7 +56,7 @@ class Server
   run: (callback) =>
     app = octobluExpress({ @logFn, @disableLogging, disableCors: true })
     app.use cors(exposedHeaders: ['Location', 'location'])
-    app.use @redisPooledClient.middleware
+    app.use @redisPooledClient.middleware()
 
     router = new Router {@afterAuthRedirectUrl, @authService, @healthcheckService}
     router.route app

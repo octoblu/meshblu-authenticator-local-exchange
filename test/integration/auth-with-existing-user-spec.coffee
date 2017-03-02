@@ -1,14 +1,12 @@
+{afterEach, beforeEach, describe} = global
+sinon = require 'sinon'
+
 shmock        = require 'shmock'
-request       = require 'request'
 enableDestroy = require 'server-destroy'
 Server        = require '../../src/server'
-_             = require 'lodash'
 fs            = require 'fs'
 path          = require 'path'
 
-CHALLENGE = _.trim fs.readFileSync path.join(__dirname, '../fixtures/challenge.b64'), encoding: 'utf8'
-NEGOTIATE = _.trim fs.readFileSync path.join(__dirname, '../fixtures/negotiate.b64'), encoding: 'utf8'
-USER_SETTINGS_RESPONSE = fs.readFileSync path.join(__dirname, '../fixtures/userSettingsResponse.xml'), encoding: 'utf8'
 MESHBLU_PRIVATE_KEY = fs.readFileSync path.join(__dirname, '../fixtures/meshblu-private-key.b64'), encoding: 'utf8'
 
 describe 'Local Exchange Authenticator', ->
